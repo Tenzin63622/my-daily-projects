@@ -7,9 +7,7 @@ public class CouponUsage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Long userId;
-
     @ManyToOne
     @JoinColumn(name = "coupon_id")
     private Coupon coupon;

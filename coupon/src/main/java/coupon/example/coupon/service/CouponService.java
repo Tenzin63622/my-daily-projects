@@ -22,7 +22,8 @@ public class CouponService {
         this.usageRepo = usageRepo;
     }
 
-    // CREATE
+
+    // Creating the coupon r
     public Coupon createCoupon(CouponRequest request) {
         Coupon coupon = new Coupon();
         coupon.setCode(request.code);
@@ -35,23 +36,28 @@ public class CouponService {
         return couponRepo.save(coupon);
     }
 
-    // GET ALL
+    // get all the coupons
     public List<Coupon> getAllCoupons() {
         return couponRepo.findAll();
     }
 
-    // GET BY CODE
+    // getting coupon by code
     public Coupon getByCode(String code) {
         return couponRepo.findByCode(code)
                 .orElseThrow(() -> new CouponException("Coupon not found"));
     }
+    //getting coupon by id
+    // public Coupon getById(Long id){
+    //     return couponRepo.findById(id)
+    //         .orElseThrow(() -> new CouponException("Coupon not found"));
+    // }
 
-    // APPLY COUPON
+    // applying the coupon
     public ApplyCouponResponse applyCoupon(ApplyCouponRequest request) {
 
         Coupon coupon = getByCode(request.code);
 
-        // VALIDATIONS
+        // validation for the coupon
         if (!coupon.isActive())
             throw new CouponException("Coupon is inactive");
 
@@ -61,7 +67,7 @@ public class CouponService {
         if (request.orderAmount < coupon.getMinAmount())
             throw new CouponException("Minimum amount not met");
 
-        // CALCULATE DISCOUNT
+        // Calculating the discount
         double discount = 0;
 
         if (coupon.getDiscountType() == DiscountType.PERCENTAGE) {
@@ -70,7 +76,7 @@ public class CouponService {
             discount = coupon.getDiscountValue();
         }
 
-        // APPLY MAX LIMIT
+        // applying max discount limit 
         if (discount > coupon.getMaxDiscount()) {
             discount = coupon.getMaxDiscount();
         }
@@ -94,7 +100,7 @@ public class CouponService {
         if (finalAmount < 0) {
             finalAmount = 0;
         }
-
+       //below code handles tracking how many times a user uses a coupon.
         if (request.userId != null) {
             CouponUsage usage = usageRepo
                     .findByUserIdAndCouponId(request.userId, coupon.getId())
@@ -110,7 +116,7 @@ public class CouponService {
         return new ApplyCouponResponse(request.orderAmount, discount, finalAmount);
     }
 
-    // UPDATE
+    // for updating the coupon
     public Coupon updateCoupon(Long id, CouponRequest request) {
         Coupon coupon = couponRepo.findById(id)
                 .orElseThrow(() -> new CouponException("Coupon not found"));
@@ -124,8 +130,20 @@ public class CouponService {
         return couponRepo.save(coupon);
     }
 
-    // DELETE
+    // for deleting the coupon
     public void deleteCoupon(Long id) {
         couponRepo.deleteById(id);
     }
+    //for getting all coupons used by a user 
+    public List<UserCouponUsageResponse> getUserUsage(Long userId) {
+
+    List<CouponUsage> usages = usageRepo.findByUserId(userId);
+
+    return usages.stream()
+            .map(u -> new UserCouponUsageResponse(
+                    u.getCoupon().getCode(),
+                    u.getUsageCount()
+            ))
+            .toList();
+}
 }

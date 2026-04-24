@@ -1,9 +1,9 @@
 package coupon.example.coupon.controller;
+
 import coupon.example.coupon.dto.*;
 import coupon.example.coupon.entity.Coupon;
 import coupon.example.coupon.service.CouponService;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
@@ -31,6 +31,10 @@ public class CouponController {
         return service.getByCode(code);
     }
 
+    // @GetMapping("/id/{id}")
+    // public Coupon getById(@PathVariable Long id) {
+    // return service.getById(id);
+    // }
     @PostMapping("/apply")
     public ApplyCouponResponse apply(@RequestBody ApplyCouponRequest request) {
         return service.applyCoupon(request);
@@ -45,5 +49,11 @@ public class CouponController {
     public String delete(@PathVariable Long id) {
         service.deleteCoupon(id);
         return "Deleted successfully";
+    }
+
+    // for getting allt the coupons used by a user
+    @GetMapping("/usage/{userId}")
+    public List<UserCouponUsageResponse> getUserUsage(@PathVariable Long userId) {
+        return service.getUserUsage(userId);
     }
 }

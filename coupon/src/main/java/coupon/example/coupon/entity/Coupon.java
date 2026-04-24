@@ -11,10 +11,10 @@ public class Coupon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false) //no two coupons can have same code
     private String code;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) //Enum is used when you know all possible values in advance and they never change.
     private DiscountType discountType;
 
     private double discountValue;
