@@ -73,88 +73,97 @@ public class CouponService {
     // Applying coupon
     public ApplyCouponResponse applyCoupon(ApplyCouponRequest request) {
 
-    // first we will user
-    User user = userRepo.findById(request.userId)
-            .orElseThrow(() -> new CouponException("User not found"));
+        // first we will user
+        User user = userRepo.findById(request.userId)
+                .orElseThrow(() -> new CouponException("User not found"));
 
-    //  Detect coupon hunter BEFORE applying coupon
-    if (user.getTotalCouponUsed() >= 5 && user.getTotalSpent() < 700) {
-        user.setCouponHunter(true);
+        // Detect coupon hunter BEFORE applying coupon
+        if (user.getTotalCouponUsed() >= 5 && user.getTotalSpent() < 700) {
+            user.setCouponHunter(true);
+            userRepo.save(user);
+        }
+
+        // Block coupon hunter
+        if (user.isCouponHunter()) {
+            throw new CouponException("Coupon blocked: user detected as coupon hunter");
+        }
+
+        // Get coupon
+        Coupon coupon = getByCode(request.code);
+
+        // Coupon validations
+        if (!coupon.isActive())
+            throw new CouponException("Coupon inactive");
+
+        if (coupon.getExpiryDate().isBefore(LocalDateTime.now()))
+            throw new CouponException("Expired");
+
+        if (request.orderAmount < coupon.getMinAmount())
+            throw new CouponException("Minimum amount not met");
+
+        // Business rules
+
+        // new user
+        if (coupon.isNewUserOnly() && user.getTotalOrders() > 0)
+            throw new CouponException("Only for new users");
+
+        // block hunters per coupon
+        if (coupon.isBlockCouponHunters() && user.isCouponHunter())
+            throw new CouponException("Coupon blocked for this user");
+
+        // high spender
+        if (coupon.isHighSpenderReward() && user.getTotalSpent() < 2000)
+            throw new CouponException("Only for high spending users");
+
+        // Calculate discount
+        double discount = (coupon.getDiscountType() == DiscountType.PERCENTAGE)
+                ? (request.orderAmount * coupon.getDiscountValue()) / 100
+                : coupon.getDiscountValue();
+
+        if (discount > coupon.getMaxDiscount())
+            discount = coupon.getMaxDiscount();
+
+        double finalAmount = request.orderAmount - discount;
+
+        if (finalAmount < 0)
+            finalAmount = 0;
+
+        // Track coupon usage
+        CouponUsage usage = usageRepo
+                .findByUserIdAndCouponId(request.userId, coupon.getId())
+                .orElse(new CouponUsage());
+
+        usage.setUserId(request.userId);
+        usage.setCoupon(coupon);
+        usage.setUsageCount(usage.getUsageCount() + 1);
+
+        usageRepo.save(usage);
+
+        // Update user stats
+        user.setTotalOrders(user.getTotalOrders() + 1);
+        user.setTotalSpent(user.getTotalSpent() + finalAmount);
+        user.setTotalCouponUsed(user.getTotalCouponUsed() + 1);
+
+        // Detect again AFTER update (important for next request)
+        if (user.getTotalCouponUsed() >= 5 && user.getTotalSpent() < 700) {
+            user.setCouponHunter(true);
+        }
+
         userRepo.save(user);
+
+        // Returning response
+        return new ApplyCouponResponse(request.orderAmount, discount, finalAmount);
     }
 
-    // Block coupon hunter
-    if (user.isCouponHunter()) {
-        throw new CouponException("Coupon blocked: user detected as coupon hunter");
-    }
+    //     User user = userRepo.findById(request.userId)
+    //             .orElseThrow(() -> new CouponException("User not found"));
 
-    // Get coupon
-    Coupon coupon = getByCode(request.code);
-
-    // Coupon validations
-    if (!coupon.isActive())
-        throw new CouponException("Coupon inactive");
-
-    if (coupon.getExpiryDate().isBefore(LocalDateTime.now()))
-        throw new CouponException("Expired");
-
-    if (request.orderAmount < coupon.getMinAmount())
-        throw new CouponException("Minimum amount not met");
-
-    // Business rules
-
-    // new user
-    if (coupon.isNewUserOnly() && user.getTotalOrders() > 0)
-        throw new CouponException("Only for new users");
-
-    // block hunters per coupon 
-    if (coupon.isBlockCouponHunters() && user.isCouponHunter())
-        throw new CouponException("Coupon blocked for this user");
-
-    // high spender
-    if (coupon.isHighSpenderReward() && user.getTotalSpent() < 2000)
-        throw new CouponException("Only for high spending users");
-
-    //  Calculate discount
-    double discount = (coupon.getDiscountType() == DiscountType.PERCENTAGE)
-            ? (request.orderAmount * coupon.getDiscountValue()) / 100
-            : coupon.getDiscountValue();
-
-    if (discount > coupon.getMaxDiscount())
-        discount = coupon.getMaxDiscount();
-
-    double finalAmount = request.orderAmount - discount;
-
-    if (finalAmount < 0)
-        finalAmount = 0;
-
-    // Track coupon usage
-    CouponUsage usage = usageRepo
-            .findByUserIdAndCouponId(request.userId, coupon.getId())
-            .orElse(new CouponUsage());
-
-    usage.setUserId(request.userId);
-    usage.setCoupon(coupon);
-    usage.setUsageCount(usage.getUsageCount() + 1);
-
-    usageRepo.save(usage);
-
-    //  Update user stats
-    user.setTotalOrders(user.getTotalOrders() + 1);
-    user.setTotalSpent(user.getTotalSpent() + finalAmount);
-    user.setTotalCouponUsed(user.getTotalCouponUsed() + 1);
-
-    //Detect again AFTER update (important for next request)
-    if (user.getTotalCouponUsed() >= 5 && user.getTotalSpent() < 700) {
-        user.setCouponHunter(true);
-    }
-
-    userRepo.save(user);
-
-    // Returning response
-    return new ApplyCouponResponse(request.orderAmount, discount, finalAmount);
-}
-    
+    //     // 🎁 Welcome back bonus
+    //     if (user.isHasWelcomeBackOffer()) {
+    //         discount += (request.orderAmount * 5) / 100; // +5% extra
+    //         user.setHasWelcomeBackOffer(false); // use once
+    //     }
+    // }
 
     // Deleting a coupon
     public void deleteCoupon(Long id) {

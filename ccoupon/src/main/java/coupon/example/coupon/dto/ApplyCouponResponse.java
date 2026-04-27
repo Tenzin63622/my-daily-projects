@@ -10,4 +10,5 @@ public class ApplyCouponResponse {
         this.discount = discount;
         this.finalAmount = finalAmount;
     }
+    
 }

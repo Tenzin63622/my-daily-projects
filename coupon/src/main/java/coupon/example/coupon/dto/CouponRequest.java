@@ -11,5 +11,10 @@ public class CouponRequest {
     public double minAmount;
     public double maxDiscount;
     public boolean isActive;
-     public CouponRequest() {}
+    public boolean newUserOnly;
+    public boolean lowSpenderOnly;
+    public boolean blockCouponHunters;
+
+    public CouponRequest() {
+    }
 }

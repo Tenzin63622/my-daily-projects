@@ -16,7 +16,7 @@ public class CouponService {
     // private static final double GLOBAL_DISCOUNT = 10;
     private final CouponRepository couponRepo;
     private final CouponUsageRepository usageRepo;
-
+    
     public CouponService(CouponRepository couponRepo, CouponUsageRepository usageRepo) {
         this.couponRepo = couponRepo;
         this.usageRepo = usageRepo;
@@ -145,5 +145,6 @@ public class CouponService {
                     u.getUsageCount()
             ))
             .toList();
-}
-}
+      }
+
+    }

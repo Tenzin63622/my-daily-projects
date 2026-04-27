@@ -11,10 +11,11 @@ public class Coupon {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false) //no two coupons can have same code
+    @Column(unique = true, nullable = false) // no two coupons can have same code
     private String code;
 
-    @Enumerated(EnumType.STRING) //Enum is used when you know all possible values in advance and they never change.
+    @Enumerated(EnumType.STRING) // Enum is used when you know all possible values in advance and they never
+                                 // change.
     private DiscountType discountType;
 
     private double discountValue;
@@ -22,6 +23,9 @@ public class Coupon {
     private double minAmount;
     private double maxDiscount;
     private boolean isActive;
+    private boolean newUserOnly;
+    private boolean lowSpenderOnly;
+    private boolean blockCouponHunters;
 
     // getters & setters
     public Long getId() {
@@ -86,5 +90,29 @@ public class Coupon {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public boolean isNewUserOnly() {
+        return newUserOnly;
+    }
+
+    public void setNewUserOnly(boolean newUserOnly) {
+        this.newUserOnly = newUserOnly;
+    }
+
+    public boolean isLowSpenderOnly() {
+        return lowSpenderOnly;
+    }
+
+    public void setLowSpenderOnly(boolean lowSpenderOnly) {
+        this.lowSpenderOnly = lowSpenderOnly;
+    }
+
+    public boolean isBlockCouponHunters() {
+        return blockCouponHunters;
+    }
+
+    public void setBlockCouponHunters(boolean blockCouponHunters) {
+        this.blockCouponHunters = blockCouponHunters;
     }
 }
