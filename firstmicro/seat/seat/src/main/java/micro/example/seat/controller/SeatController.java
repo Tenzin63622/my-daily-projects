@@ -1,5 +1,7 @@
 package micro.example.seat.controller;
 
+import micro.example.seat.dto.ConfirmSeatRequest;
+import micro.example.seat.dto.LockSeatRequest;
 import micro.example.seat.entity.Seat;
 import micro.example.seat.service.SeatService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +30,17 @@ public class SeatController {
 
     // Lock seats
     @PostMapping("/lock")
-    public String lockSeats(@RequestParam List<Long> seatIds,
-                            @RequestParam Long userId) {
-        seatService.lockSeats(seatIds, userId);
+    public String lockSeats(@RequestBody LockSeatRequest request) {
+
+        seatService.lockSeats(request.getSeatIds(), request.getUserId());
         return "Seats locked successfully";
     }
 
     // Confirm booking
     @PostMapping("/confirm")
-    public String confirm(@RequestParam List<Long> seatIds) {
-        seatService.confirmSeats(seatIds);
+    public String confirm(@RequestBody ConfirmSeatRequest request) {
+
+        seatService.confirmSeats(request.getSeatIds());
         return "Booking confirmed";
     }
 }
