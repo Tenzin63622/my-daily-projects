@@ -27,7 +27,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final UserDetailsServiceImpl userDetailsService;
 
-    // Constructor Injection (BEST PRACTICE)
+    // ✅ Constructor Injection (BEST PRACTICE)
     public AuthTokenFilter(JwtUtils jwtUtils,
                            UserDetailsServiceImpl userDetailsService) {
         this.jwtUtils = jwtUtils;
