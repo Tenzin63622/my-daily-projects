@@ -23,7 +23,7 @@ public class WebSecurityConfig {
     private final AuthEntryPointJwt unauthorizedHandler;
     private final AuthTokenFilter authTokenFilter;
 
-    // ✅ Constructor Injection (BEST PRACTICE)
+    //  Constructor Injection (BEST PRACTICE)
     public WebSecurityConfig(UserDetailsServiceImpl userDetailsService,
                              AuthEntryPointJwt unauthorizedHandler,
                              AuthTokenFilter authTokenFilter) {
@@ -42,7 +42,7 @@ public class WebSecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // ✅ FIXED for latest Spring Security
+    // FIXED for latest Spring Security
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider =
@@ -67,10 +67,10 @@ public class WebSecurityConfig {
                     .anyRequest().authenticated()
             );
 
-        // ✅ register provider
+        // register provider
         http.authenticationProvider(authenticationProvider());
 
-        // ✅ use injected filter (NOT new)
+        // use injected filter (NOT new)
         http.addFilterBefore(authTokenFilter,
                 UsernamePasswordAuthenticationFilter.class);
 

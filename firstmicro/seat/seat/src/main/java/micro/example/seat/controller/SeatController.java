@@ -15,7 +15,10 @@ public class SeatController {
 
     @Autowired
     private SeatService seatService;
-
+     @GetMapping
+    public List<Seat> getAllSeats() {
+    return seatService.getAllSeats();
+     }
     // Add seat
     @PostMapping
     public Seat addSeat(@RequestBody Seat seat) {

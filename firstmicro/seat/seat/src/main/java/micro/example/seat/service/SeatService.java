@@ -20,6 +20,9 @@ public class SeatService {
         seat.setStatus(SeatStatus.AVAILABLE);
         return seatRepository.save(seat);
     }
+    public List<Seat> getAllSeats() {
+    return seatRepository.findAll();
+     }
 
     // Get seats by show
     public List<Seat> getSeatsByShow(Long showId) {
